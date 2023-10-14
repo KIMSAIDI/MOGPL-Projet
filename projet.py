@@ -129,57 +129,16 @@ def calcul_temps_algo_couplage(g) :
     tps2 = time.time()
     return tps2 - tps1
 
-
-# def delete_sommet(G, v):
-#     G2 = copy.deepcopy(G) # deepcopy pour ne pas modifier l'original (clé+liste de valeur)
-#     del G2[v]
-#     for l_value in G2.values():
-#         for u in l_value:
-#             if u == v:
-#                 l_value.remove(u)
-#     return G2
-
-
-i = 1
-def branchement(G, C, S, var) :
-    global i  
-    print('appel de la fonction numero :', i)
-    i+=1
-    print(' on est dans la fonction ', var)
-    print('S = ', S)
-    print(' C = ', C)
-    print('\n')
-    # un graphe G : dict()
-    # une couverture C (la solution partielle ou complète) : list()
-    # un ensemble de sommets à traiter S : list()
-    # Cas d'arret
-    if S == []: # feuille de l'arbre (tous les sommets sont traités)
-        if list_aretes(G) == []: # graphe sans aretes donc la couverture est une solution réalisable
-            return C 
-        return [] # sinon solution non réalisable (renvoie une couverture vide)
-    # Recursivite
-    u = S[0] # sommet à traiter
-    G2 = delete_sommet(G, u) # graphe sans le sommet u et toutes ses aretes
+def calcul_temps_branchement(G, C) :
     
-    res1 = branchement(G2, C+[u], S[1:], 1) # on prend u
-    # print('s = ', S)
-    # print('res1 = ', res1)
+    tps1 = time.time()
+    branchement(G, C)
+    tps2 = time.time()
+    return tps2 - tps1
 
-    res2 = branchement(G, C, S[1:], 2) # on ne prend pas u
-   
-    # Optimal : la plus petite couverture
-    if res1 == []:
-        return res2 
-    elif res2 == []:
-        return res1
-    else:
-        if len(res1) <= len(res2):
-            return res1 
-        return res2
-    
      
 
-def branchement2(G, C) :
+def branchement(G, C) :
     L_A = list_aretes(G)
     # condition d'arrêt : liste d'arêtes vide
     if not L_A:
@@ -192,26 +151,18 @@ def branchement2(G, C) :
     G1 = copy.deepcopy(G)
     C1 = C + [u]
     G1 = delete_sommet(G1, u)
-    print('branche gauche -----')
-    print('u = ', u)
-    print('C = ', C1)
-    print('\n')
-    res1 = branchement2(G1, C1)
+    res1 = branchement(G1, C1)
     
     # Branche droite : on met v dans C
     G2 = copy.deepcopy(G)
     C2 = C + [v]
     G2 = delete_sommet(G2, v)
-    print('branche droit -----')
-    print('u = ', v)
-    print('C = ', C2)
-    print('\n')
-    res2 = branchement2(G2, C2)
+    res2 = branchement(G2, C2)
     
     return res1 if len(res1) <= len(res2) else res2
 
 
-#------------------Main------------------
+# #------------------Main------------------
 
 nb_sommets, sommets, nb_aretes, aretes = read_file("exempleinstance.txt")
 G = create_graph(nb_sommets, sommets, nb_aretes, aretes)
@@ -265,8 +216,38 @@ G = create_graph(nb_sommets, sommets, nb_aretes, aretes)
 
 # #------------------Test Branchement------------------
 
-# print(branchement2(G, []))
-# print("result = ")
+# # Exemple simple
+
+# graphe_simple = create_graph(4, ['1', '2', '3', '4'], 3, [['1', '2'], ['2', '4'], ['2', '3']])
+# print(branchement(graphe_simple, []))
+
+# print(branchement(G, []))
 # print(branchement(G, C, S, 0))
 
+# #------------------Test temps de calculs Branchement------------------
 
+# graphe_alea = create_graph_random(18, 0.5)
+# print("temps de calculs pour la fonction branchement : ")
+# print(calcul_temps_branchement(graphe_alea, []))
+
+# #------------------Courbe temps de calculs Branchement------------------
+# i = 0
+# tab = []
+# Nmax = 15
+# p = 1/np.sqrt(Nmax)
+# Nmax_list = [n for n in range(Nmax)]  
+
+# while (i < Nmax) :
+   
+#     g = create_graph_random(i * Nmax / 10, p)
+#     tmps = calcul_temps_branchement(g, [])
+#     tab.append(tmps)
+#     i+=1
+    
+
+# plt.plot(Nmax_list, tab)
+# plt.title('Temps de calculs pour la fonction branchement en fonction de Nmax')
+# plt.xlabel('Nmax')
+# plt.ylabel('Temps de calculs')
+# plt.grid()
+# plt.show()
