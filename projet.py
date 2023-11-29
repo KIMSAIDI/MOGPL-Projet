@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import sys
+import random
+import copy
 
 from exemples import *
 
@@ -23,16 +25,9 @@ def Bellman_Ford(G, s):
     # nb_it : nombre d'itérations nécessaire avant la convergence de l'algorithme
     nb_it = 0
     # d : liste représentant les longueurs des chemins entre s et les autres sommets
-    d = dict()
     # on initialise pour tous les sommets dans G, la longueur = infini et pour s = 0
-    for u in G.keys():
-        if u == s:
-            d[u] = 0
-        else:
-            d[u] = sys.maxsize
-
-    # Luc : On peut aussi faire des compréhensions de dictionnaires
-    # d = {u: 0 if u == s else sys.maxsize for u in G.keys()}
+    d = {u: 0 if u == s else sys.maxsize for u in G.keys()}
+    
 
     # boucle principale
     for i in range(n - 1):
@@ -189,6 +184,71 @@ def GloutonFas(G):
     return s1 + s2[::-1]  # On inverse s2 (on l'a construite à l'envers)
 
 
+def creation_graphes(G) :
+    """
+    A partir de G, on crée 4 graphes : G1, G2, G3, H qui nous permet de tester l'efficacité des l'algorithmes 
+    On choisit de manière uniforme et aléatoire les poids des arcs dans l'intervalle [-10, 10]
+
+    Paramètres:
+        G : dict(int : list[(int, int)]) -
+            Graphe, représenté sous la forme d'un dictionnaire.
+            Les keys (int) sont tous les sommets du graphe.
+            Les values (list[(int, int)]) sont tous les sommets sortant du sommet et sont représentées sous la forme d'un tuple avec comme deuxième element le poids associé
+    
+    Valeur de retour :
+        G1, G2, G3, H : dict(int : list[(int, int)]) -
+            Graphe, représenté sous la forme d'un dictionnaire.
+            Les keys (int) sont tous les sommets du graphe.
+            Les values (list[(int, int)]) sont tous les sommets sortant du sommet et sont représentées sous la forme d'un tuple avec comme deuxième element le poids associé
+    """
+
+    G1 = copy.deepcopy(G)
+    G2 = copy.deepcopy(G)
+    G3 = copy.deepcopy(G)
+    H = copy.deepcopy(G)
+
+    for u, v in G1.items():
+        for i in range(len(v)): # i : indice de l'arc
+            v[i] = (v[i][0], random.randint(-10, 10))
+
+    for u, v in G2.items():
+        for i in range(len(v)):
+            v[i] = (v[i][0], random.randint(-10, 10))
+
+    for u, v in G3.items():
+        for i in range(len(v)):
+            v[i] = (v[i][0], random.randint(-10, 10))
+
+    for u, v in H.items():
+        for i in range(len(v)):
+            v[i] = (v[i][0], random.randint(-10, 10))
+
+    return G1, G2, G3, H
+
+def union(G1, G2) :
+    """
+    Retourne l'union de deux graphes en choissisant les plus courts chemins
+    On part du principe que G1 et G2 sont des graphes sans circuit négatif qui sont identiques (diffère seulement sur la valeur des poids des arcs)
+    
+    Paramètres:
+        G1 dict(int : list[(int, int)]) - Graphe
+        G2 dict(int : list[(int, int)]) - Graphe
+    
+    Valeur de retour :
+        dict(int : list[(int, int)]) -
+        union des deux graphes
+    """
+    G = copy.deepcopy(G1) 
+    
+    for u, v in G1.items() :
+        # on prend la valeur absolue pour avoir le plus court chemin
+        if abs(G2[u]) < abs(v) :
+           G[u] = G2[u]
+        else :
+            G[u] = v
+        
+    return G
+
 if __name__ == "__main__":
     G = exemple1()
 
@@ -201,3 +261,19 @@ if __name__ == "__main__":
 
     s = GloutonFas(G)
     print(f"{s=}")
+    
+    G = exemple3()
+    G1, G2, G3, H = creation_graphes(G)
+    
+    # Question 4
+    # pour G2 : la source est 0, le puit est 4
+    d1, nb_it1 = Bellman_Ford(G1, 0)
+    d2, nb_it2 = Bellman_Ford(G2, 0)
+    d3, nb_it3 = Bellman_Ford(G3, 0)
+    print(f"{d1=}\n")
+    print(f"{d2=}\n")
+    print(f"{d3=}\n")
+    
+    T = union(d1, d2)
+    T = union(T, d3)
+    print(T)
