@@ -7,7 +7,7 @@ from exemples import *
 
 
 # Question 1
-def Bellman_Ford(G, s):
+def Bellman_Ford(G, s, ordre):
     """
     Renvoie l'algorithme de Bellman_Ford.
     Le graphe ne contient aucun circuit négatif (d'après énoncé).
@@ -19,6 +19,17 @@ def Bellman_Ford(G, s):
             Les values (list[(int, int)]) sont tous les sommets sortant du sommet et sont representés sous la formes d'un tuples avec comme deuxième element le poid associé
         
         s : int - sommet
+
+        ordre : list[int] - un ordre de sommets à parcourir
+
+    Valeurs de retour
+        dict(int : list[(int, int)])
+            Un dictionnaire représentant l'arborescence des plus courts chemins (chemins considérés par l'algorithme à l'itération finale)
+            Le format est celui d'un graphe classique (voir l'entrée), les arêtes ne sont pas valuées (=0) mais le poids est gardé pour avoir le même format
+
+        int
+            Le nombre d'itérations effectuées par l'algorithme
+
     """
     # n : nombre de sommet dans G
     n = len(G)
@@ -27,7 +38,8 @@ def Bellman_Ford(G, s):
     # d : liste représentant les longueurs des chemins entre s et les autres sommets
     # on initialise pour tous les sommets dans G, la longueur = infini et pour s = 0
     d = {u: 0 if u == s else sys.maxsize for u in G.keys()}
-    
+
+    parents = {u: -1 for u in G.keys()}  # Parents lie chaque sommet au parent duquel on vient (dans le plus court chemin) -1 = pas de parent
 
     # boucle principale
     for i in range(n - 1):
@@ -35,7 +47,8 @@ def Bellman_Ford(G, s):
         boolean = True
         # u : sommet
         # v : liste des arcs sortant de u avec le poid correspondant
-        for u, v in G.items():
+        for u in ordre:
+            v = G[u]
             # arcs : tuple(int, int) ; arcs[0] : sommet, arcs[1] : poids
             for arcs in v:
                 if d[u] + arcs[1] < d[arcs[0]]:
@@ -44,12 +57,22 @@ def Bellman_Ford(G, s):
                     # on update la valeur de la longueur
                     d[arcs[0]] = d[u] + arcs[1]
 
+                    # On update le parent
+                    parents[arcs[0]] = u
+
         if boolean:  # l'algorithme a convergé
             break
         else:
             nb_it += 1
 
-    return d, nb_it
+    # On reconstruit l'arborescence des chemins les plus courts à partir des parents
+    arborescence = {u: [] for u in G.keys()}
+
+    for u, parent in parents.items():
+        if parent != -1:
+            arborescence[parent].append((u, 0))
+
+    return arborescence, nb_it
 
 
 # Question 2
@@ -225,6 +248,7 @@ def creation_graphes(G) :
 
     return G1, G2, G3, H
 
+
 def union(G1, G2) :
     """
     Retourne l'union de deux graphes en choissisant les plus courts chemins
@@ -238,42 +262,82 @@ def union(G1, G2) :
         dict(int : list[(int, int)]) -
         union des deux graphes
     """
-    G = copy.deepcopy(G1) 
+    # G = copy.deepcopy(G1)
     
-    for u, v in G1.items() :
-        # on prend la valeur absolue pour avoir le plus court chemin
-        if abs(G2[u]) < abs(v) :
-           G[u] = G2[u]
-        else :
-            G[u] = v
+    # for u, v in G1.items() :
+    #     # on prend la valeur absolue pour avoir le plus court chemin
+    #     if abs(G2[u]) < abs(v) :
+    #        G[u] = G2[u]
+    #     else :
+    #         G[u] = v
+
+    G = {}  # Graphe de retour
+
+    for sommet in G1.keys():
+        G[sommet] = list(set(G1[sommet] + G2[sommet]))  # On concatène les listes d'arêtes des deux graphes (on caste en set au milieu pour enlever les doublons)
         
     return G
+
+def ordre_tot(G, s):
+    """
+    Retourne un ordre <tot à partir d'un graphe
+
+    Paramètre:
+        G : dict(int : list[(int, int)]) - Le graphe
+        s: int - la source depuis laquelle exécuter bellman_ford
+
+    Valeur de retour :
+        list[int] - L' ordre <tot déterminé
+    """
+
+    G1, G2, G3, H = creation_graphes(G)
+
+    d1, nb_it1 = Bellman_Ford(G1, s, G.keys())
+    d2, nb_it2 = Bellman_Ford(G2, s, G.keys())
+    d3, nb_it3 = Bellman_Ford(G3, s, G.keys())
+
+    print(f"{G1=}\n{d1=}, {nb_it1=}\n")
+    print(f"{G2=}\n{d2=}, {nb_it2=}\n")
+    print(f"{G3=}\n{d3=}, {nb_it3=}\n")
+
+    T = union(d1, d2)
+    T = union(T, d3)
+
+    print(f"{T=}")
+
+    return GloutonFas(T)
+
 
 if __name__ == "__main__":
     G = exemple1()
 
+    print(f"{G=}")
+
     # Sommet source
     s = 1
 
-    d, nb_it = Bellman_Ford(G, s)
-    print("d = ", d)
+    arborescence, nb_it = Bellman_Ford(G, s, G.keys())
+    print("arborescence = ", arborescence)
     print("Nombre iterations = ", nb_it)
 
     s = GloutonFas(G)
     print(f"{s=}")
     
-    G = exemple3()
+    G = exemple2()
+    print(f"\n -- Exemple 3 --\n\n{G=}\n")
     G1, G2, G3, H = creation_graphes(G)
     
-    # Question 4
-    # pour G2 : la source est 0, le puit est 4
-    d1, nb_it1 = Bellman_Ford(G1, 0)
-    d2, nb_it2 = Bellman_Ford(G2, 0)
-    d3, nb_it3 = Bellman_Ford(G3, 0)
-    print(f"{d1=}\n")
-    print(f"{d2=}\n")
-    print(f"{d3=}\n")
-    
-    T = union(d1, d2)
-    T = union(T, d3)
-    print(T)
+    tot = ordre_tot(G, 0)
+
+    # Questions 6 / 7
+
+    s = 4
+
+    arb_tot, nb_it_tot = Bellman_Ford(G, s, tot)
+    ordre_rand = list(G.keys())
+    random.shuffle(ordre_rand)
+    arb_rand, nb_it_rand = Bellman_Ford(G, s, ordre_rand)
+
+    print(f"{arb_tot=}\n{nb_it_tot=}\n")
+    print(f"{arb_rand=}\n{nb_it_rand=}\n")
+
