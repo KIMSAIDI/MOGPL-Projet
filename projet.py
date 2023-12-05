@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import functools
 import sys
 import random
 import copy
@@ -207,9 +208,9 @@ def GloutonFas(G):
     return s1 + s2[::-1]  # On inverse s2 (on l'a construite à l'envers)
 
 
-def creation_graphes(G) :
+def creation_graphes(G, n) :
     """
-    A partir de G, on crée 4 graphes : G1, G2, G3, H qui nous permet de tester l'efficacité des l'algorithmes 
+    A partir de G, on crée n graphes : G1, G2, ..., G(n-1), H qui nous permet de tester l'efficacité des algorithmes
     On choisit de manière uniforme et aléatoire les poids des arcs dans l'intervalle [-10, 10]
 
     Paramètres:
@@ -217,36 +218,30 @@ def creation_graphes(G) :
             Graphe, représenté sous la forme d'un dictionnaire.
             Les keys (int) sont tous les sommets du graphe.
             Les values (list[(int, int)]) sont tous les sommets sortant du sommet et sont représentées sous la forme d'un tuple avec comme deuxième element le poids associé
-    
+        n : le nombre de graphes aléatoires à créer
+
     Valeur de retour :
-        G1, G2, G3, H : dict(int : list[(int, int)]) -
+        graphes : list[dict(int : list[(int, int)])]
+            Une liste de graphes G1, G2, ..., G(n-1) générés
+        H : dict(int : list[(int, int)]) -
             Graphe, représenté sous la forme d'un dictionnaire.
             Les keys (int) sont tous les sommets du graphe.
             Les values (list[(int, int)]) sont tous les sommets sortant du sommet et sont représentées sous la forme d'un tuple avec comme deuxième element le poids associé
     """
 
-    G1 = copy.deepcopy(G)
-    G2 = copy.deepcopy(G)
-    G3 = copy.deepcopy(G)
+    graphes = [copy.deepcopy(G) for _ in range(n-1)]
     H = copy.deepcopy(G)
 
-    for u, v in G1.items():
-        for i in range(len(v)): # i : indice de l'arc
-            v[i] = (v[i][0], random.randint(-10, 10))
-
-    for u, v in G2.items():
-        for i in range(len(v)):
-            v[i] = (v[i][0], random.randint(-10, 10))
-
-    for u, v in G3.items():
-        for i in range(len(v)):
-            v[i] = (v[i][0], random.randint(-10, 10))
+    for graphe in graphes:
+        for u, v in graphe.items():
+            for i in range(len(v)): # i : indice de l'arc
+                v[i] = (v[i][0], random.randint(-10, 10))
 
     for u, v in H.items():
         for i in range(len(v)):
             v[i] = (v[i][0], random.randint(-10, 10))
 
-    return G1, G2, G3, H
+    return graphes, H
 
 
 def union(G1, G2) :
@@ -278,30 +273,27 @@ def union(G1, G2) :
         
     return G
 
-def ordre_tot(G, s):
+def ordre_tot(G, s, nbGraphes):
     """
     Retourne un ordre <tot à partir d'un graphe
 
     Paramètre:
         G : dict(int : list[(int, int)]) - Le graphe
         s: int - la source depuis laquelle exécuter bellman_ford
+        nbGraphes : le nombre de graphes aléatoires à générer pour déterminer l'ordre
 
     Valeur de retour :
-        list[int] - L' ordre <tot déterminé
+        list[int] - L'ordre <tot déterminé
     """
 
-    G1, G2, G3, H = creation_graphes(G)
+    graphes, H = creation_graphes(G, nbGraphes)
 
-    d1, nb_it1 = Bellman_Ford(G1, s, G.keys())
-    d2, nb_it2 = Bellman_Ford(G2, s, G.keys())
-    d3, nb_it3 = Bellman_Ford(G3, s, G.keys())
+    resultats = [Bellman_Ford(graphe, s, G.keys()) for graphe in graphes]
 
-    print(f"{G1=}\n{d1=}, {nb_it1=}\n")
-    print(f"{G2=}\n{d2=}, {nb_it2=}\n")
-    print(f"{G3=}\n{d3=}, {nb_it3=}\n")
+    arb = [t[0] for t in resultats]
+    nb_it = [t[1] for t in resultats]
 
-    T = union(d1, d2)
-    T = union(T, d3)
+    T = functools.reduce(union, arb)  # Applique la fonction union sur G1 et G2, puis le résultat et G3 ... jusqu'à ce qu'il reste un seul élément
 
     print(f"{T=}")
 
@@ -324,10 +316,12 @@ if __name__ == "__main__":
     print(f"{s=}")
     
     G = exemple2()
-    print(f"\n -- Exemple 3 --\n\n{G=}\n")
-    G1, G2, G3, H = creation_graphes(G)
+    print(f"\n -- Exemple 2 --\n\n{G=}\n")
+    # G1, G2, G3, H = creation_graphes(G)
     
-    tot = ordre_tot(G, 0)
+    tot = ordre_tot(G, 0, 4)
+
+    print(f"{tot=}")
 
     # Questions 6 / 7
 
