@@ -320,7 +320,7 @@ def create_graph_random(n, p) :
      
     G[sommet_source] = l_aretes
     
-   
+   # les autres sommets
     for i in range(1, n) :
         l_aretes = []
         nb_arcs = random.randint(0, n)
@@ -329,11 +329,11 @@ def create_graph_random(n, p) :
             q = random.random()
             if q <= p :
                 poids = random.randint(-10, 10)
-                successeur = random.randint(1, n)
+                successeur = random.randint(1, n-1)
                 # si jamais le successeur = au sommet courant
                 # pour éviter les boucles
                 while successeur == i :
-                    successeur = random.randint(1, n)
+                    successeur = random.randint(1, n-1)
                 l_aretes.append((successeur, poids))
         G[i] = l_aretes
     
@@ -347,14 +347,12 @@ def detection_circuit_negatif(G, s) :
     n = len(G)
     nb_it = 0
     d = {u: 0 if u == s else sys.maxsize for u in G.keys()}
-
     # boucle principale
-    for i in range(n):
+    for i in range(n-1):
         boolean = True
         # u : sommet
         # v : liste des arcs sortant de u avec le poid correspondant
-        for u in ordre:
-            v = G[u]
+        for u, v in G.items():
             # arcs : tuple(int, int) ; arcs[0] : sommet, arcs[1] : poids
             for arcs in v:
                 if d[u] + arcs[1] < d[arcs[0]]:
@@ -366,55 +364,78 @@ def detection_circuit_negatif(G, s) :
         if boolean:  # l'algorithme a convergé
             break
         else:
-            if nb_it == n :
-                return True
             nb_it += 1
+    
+    # verifie si il y a un circuit négatif
+    for u, v in G.items() :
+        for arcs in v :
+            if d[u] + arcs[1] < d[arcs[0]]:
+                return True
     
     return False
 
 if __name__ == "__main__":
-    G = exemple1()
+    # G = exemple2()
 
-    print(f"{G=}")
+    # print(f"{G=}")
 
-    # Sommet source
-    s = 1
+    # # Sommet source
+    # s = 1
 
-    arborescence, nb_it = Bellman_Ford(G, s, G.keys())
-    print("arborescence = ", arborescence)
-    print("Nombre iterations = ", nb_it)
+    # # Question 1 / 2
+    # arborescence, nb_it = Bellman_Ford(G, s, G.keys())
+    # print("arborescence = ", arborescence)
+    # print("Nombre iterations = ", nb_it)
 
-    s = GloutonFas(G)
-    print(f"{s=}")
+    # s = GloutonFas(G)
+    # print(f"{s=}")
     
-    G = exemple2()
-    print(f"\n -- Exemple 3 --\n\n{G=}\n")
-    G1, G2, G3, H = creation_graphes(G)
+    # # Question 3
+    # print(f"\n -- Exemple 3 --\n\n{G=}\n")
+    # G1, G2, G3, H = creation_graphes(G)
     
-    tot = ordre_tot(G, 0)
-    print(f"{tot=}\n")
-
-    # Questions 6 / 7
-    s = 4
-
-    arb_tot, nb_it_tot = Bellman_Ford(G, s, tot)
-    ordre_rand = list(G.keys())
-    random.shuffle(ordre_rand)
-    arb_rand, nb_it_rand = Bellman_Ford(G, s, ordre_rand)
-
-    print(f"{arb_tot=}\n{nb_it_tot=}\n")
-    print(f"{arb_rand=}\n{nb_it_rand=}\n")
+    # # Question 4 / 5
+    # tot = ordre_tot(H, 0)
+    # print(f"{tot=}\n")
+ 
+    # # Questions 6 / 7
+    # s = 4
+    # # ordre total
+    # arb_tot, nb_it_tot = Bellman_Ford(H, s, tot)
+    # # ordre random
+    # ordre_rand = list(H.keys())
+    # random.shuffle(ordre_rand)
+    
+    # arb_rand, nb_it_rand = Bellman_Ford(H, s, ordre_rand)
+    # print(f"{arb_tot=}\n{nb_it_tot=}\n")
+    # print(f"{arb_rand=}\n{nb_it_rand=}\n")
     
     
-    # Question 9
-    
+    # génération graphes
     Nmax = 10
+    n = 5
     p = 0.5
-    tab = []
-    for i in range(Nmax):
-        n = i* Nmax // 10
-        g = create_graph_random(n, p)
-        tab.append(g)
+    for i in range(Nmax) :
+        #création du graphe sans circuit à poids négatif
+        G, s = create_graph_random(n, p)
+        print(G)
+        if (detection_circuit_negatif(G, s)) :
+            while (detection_circuit_negatif(G, s)) : # si detection de graphe circuit
+                G, s = create_graph_random(n, p)
+
+        G1, G2, G3, H = creation_graphes(G)
+    
+        tot = ordre_tot(H, 0)
+        print(f"{tot=}\n")
         
+        arb_tot, nb_it_tot = Bellman_Ford(H, s, tot)
+        
+        ordre_rand = list(H.keys())
+        random.shuffle(ordre_rand)
+        
+        arb_rand, nb_it_rand = Bellman_Ford(H, s, ordre_rand)
+        print(f"{arb_tot=}\n{nb_it_tot=}\n")
+        print(f"{arb_rand=}\n{nb_it_rand=}\n")
+
     
-    
+  
