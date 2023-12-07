@@ -337,7 +337,7 @@ def ordre_tot(G, s, nbGraphes):
     nb_it = [t[1] for t in resultats]
 
     T = functools.reduce(union, arb)  # Applique la fonction union sur G1 et G2, puis le résultat et G3 ... jusqu'à ce qu'il reste un seul élément
-    print(f"{T=}")
+    # print(f"{T=}")
 
     return GloutonFas(T), H
 
@@ -455,16 +455,19 @@ if __name__ == "__main__":
     
 
     # Question 9
-    Nmax = 21
+    Nmax = 31
+    pas = 5
+    nb_repetitions = 5
     tab_nb_it_tot = [] # nb itérations pour ordre total
     tab_nb_it_rand=  [] # nb itérations pour ordre random
     tab = [] # sommets
 
-    for i in range(4, Nmax, 2) :
+    for i in range(4, Nmax, pas) :
         it_tot = 0
         it_rand = 0
-        for j in range(2):
-            print(f"{i}/{Nmax}")
+        print(f"{i}/{Nmax}")
+        for j in range(nb_repetitions):
+            print(f"\t{j+1} / {nb_repetitions}")
             G, s = create_graph_random(i, math.sqrt(i)/i)
             while (detection_circuit_negatif(G, s)) : # si detection de graphe circuit
                 G, s = create_graph_random(i, math.sqrt(i)/i)
@@ -485,18 +488,18 @@ if __name__ == "__main__":
 
         
         # ajout dans les tableaux  
-        tab_nb_it_tot.append(it_tot)
-        tab_nb_it_rand.append(it_rand)
+        tab_nb_it_tot.append(it_tot / nb_repetitions)
+        tab_nb_it_rand.append(it_rand / nb_repetitions)
         tab.append(i)
     
     # comparaison des nombres d'iterations  
     print(tab_nb_it_tot)
     print(tab_nb_it_rand)
 
-    xaxis = list(range(4, Nmax, 2))
+    xaxis = list(range(4, Nmax, pas))
     
     # graphique des résultats
-    plt.plot(xaxis, tab_nb_it_tot, label="ordre total")
+    plt.plot(xaxis, tab_nb_it_tot, label="ordre <tot")
     plt.plot(xaxis, tab_nb_it_rand, label="ordre random")
     # plt.axis([xmin, xmax, ymin, ymax])
     # plt.axis(list(range(4, Nmax, 2)))
@@ -504,6 +507,5 @@ if __name__ == "__main__":
     plt.xlabel("Nombre de sommets")
     plt.ylabel("Nombre d'itérations")
     plt.legend()
+    plt.savefig("Comparaison_tot_random.png")
     plt.show()
-        
-   
