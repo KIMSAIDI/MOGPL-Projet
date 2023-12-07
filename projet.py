@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
 import functools
+import math
 import sys
 import random
 import copy
+
+from matplotlib import pyplot as plt
+
 # import matplotlib.pyplot as plt
 from exemples import *
 # Question 1
@@ -182,7 +186,6 @@ def GloutonFas(G):
     """
     G = G.copy()  # On ne souhaite pas modifier le graphe originel
     s1, s2 = [], []
-
     while G:  # Tant que le graphe n'est pas vide
         u = sources(G)  # U est la liste de tous les sommets sources de G
         while u:  # Tant qu'on trouve des sources
@@ -249,7 +252,7 @@ def GloutonFas(G):
 
 # fonction creation_graphes mais avec n graphes
 
-def creation_graphes(G, n) :
+def creation_graphes(G, n, s) :
     """
     A partir de G, on crée n graphes : G1, G2, ..., G(n-1), H qui nous permet de tester l'efficacité des algorithmes
     On choisit de manière uniforme et aléatoire les poids des arcs dans l'intervalle [-10, 10]
@@ -260,6 +263,7 @@ def creation_graphes(G, n) :
             Les keys (int) sont tous les sommets du graphe.
             Les values (list[(int, int)]) sont tous les sommets sortant du sommet et sont représentées sous la forme d'un tuple avec comme deuxième element le poids associé
         n : le nombre de graphes aléatoires à créer
+        s : la source du graphe
 
     Valeur de retour :
         graphes : list[dict(int : list[(int, int)])]
@@ -276,11 +280,19 @@ def creation_graphes(G, n) :
     for graphe in graphes:
         for u, v in graphe.items():
             for i in range(len(v)): # i : indice de l'arc
-                v[i] = (v[i][0], random.randint(-10, 10))
+                v[i] = (v[i][0], random.randint(-5, 15))
+        while detection_circuit_negatif(graphe, s):
+            for u, v in graphe.items():
+                for i in range(len(v)):  # i : indice de l'arc
+                    v[i] = (v[i][0], random.randint(-5, 15))
 
     for u, v in H.items():
         for i in range(len(v)):
-            v[i] = (v[i][0], random.randint(-10, 10))
+            v[i] = (v[i][0], random.randint(-5, 15))
+    while detection_circuit_negatif(H, s):
+        for u, v in H.items():
+            for i in range(len(v)):
+                v[i] = (v[i][0], random.randint(-5, 15))
 
     return graphes, H
 
@@ -318,16 +330,13 @@ def ordre_tot(G, s, nbGraphes):
     Valeur de retour :
         list[int] - L'ordre <tot déterminé
     """
-
-    graphes, H = creation_graphes(G, nbGraphes)
-
+    graphes, H = creation_graphes(G, nbGraphes, s)
     resultats = [Bellman_Ford(graphe, s, G.keys()) for graphe in graphes]
 
     arb = [t[0] for t in resultats]
     nb_it = [t[1] for t in resultats]
 
     T = functools.reduce(union, arb)  # Applique la fonction union sur G1 et G2, puis le résultat et G3 ... jusqu'à ce qu'il reste un seul élément
-
     print(f"{T=}")
 
     return GloutonFas(T), H
@@ -346,7 +355,7 @@ def candidat_source(G, s):
     """
     # On effectue un BFS pour marquer les sommets accessibles depuis le sommet source
     n = len(G)
-    visited = [0] * n
+    visited = [0] * (max(G.keys()) + 1)
     pile = [s]
 
     while pile:  # On traite des sommets tant que la pile n'est pas vide
@@ -362,14 +371,14 @@ def candidat_source(G, s):
 
 
 def create_graph_random(n, p) :
-    G = {i: [] for i in range(n)}
+    G = {i: [] for i in range(1, n+1)}
 
-    for u in range(n):
-        for v in range(n):
+    for u in range(1, n+1):
+        for v in range(1, n+1):
             if u != v and random.random() < p:
-                G[u].append((v, random.randint(-10, 10)))
+                G[u].append((v, random.randint(-5, 15)))
 
-    sources_candidates = [s for s in range(n) if candidat_source(G, s)]
+    sources_candidates = [s for s in range(1, n+1) if candidat_source(G, s)]
 
     return G, random.choice(sources_candidates)
 
@@ -446,45 +455,55 @@ if __name__ == "__main__":
     
 
     # Question 9
-    Nmax = 20
-    p = 0.5
+    Nmax = 21
     tab_nb_it_tot = [] # nb itérations pour ordre total
     tab_nb_it_rand=  [] # nb itérations pour ordre random
     tab = [] # sommets
-    
+
     for i in range(4, Nmax, 2) :
-        G, s = create_graph_random(i, p)
-        if (detection_circuit_negatif(G, s)) :
+        it_tot = 0
+        it_rand = 0
+        for j in range(2):
+            print(f"{i}/{Nmax}")
+            G, s = create_graph_random(i, math.sqrt(i)/i)
             while (detection_circuit_negatif(G, s)) : # si detection de graphe circuit
-                G, s = create_graph_random(i, p)
-        
-        # ordre total
-        # print("on est la")
-        tot, H = ordre_tot(G, s, 4)
-        # print("on est la2")
-        # print(tot)
-        arb_tot, nb_it_tot = Bellman_Ford(H, s, tot)
-        
-        # ordre random
-        ordre_rand = list(H.keys())
-        random.shuffle(ordre_rand)
-        arb_rand, nb_it_rand = Bellman_Ford(H, s, ordre_rand)
+                G, s = create_graph_random(i, math.sqrt(i)/i)
+
+            # ordre total
+            # print("on est la")
+            tot, H = ordre_tot(G, s, 4)
+            # print("on est la2")
+            # print(tot)
+            arb_tot, nb_it_tot = Bellman_Ford(H, s, tot)
+            # ordre random
+            ordre_rand = list(H.keys())
+            random.shuffle(ordre_rand)
+            arb_rand, nb_it_rand = Bellman_Ford(H, s, ordre_rand)
+
+            it_rand += nb_it_rand
+            it_tot += nb_it_tot
+
         
         # ajout dans les tableaux  
-        tab_nb_it_tot.append(nb_it_tot)
-        tab_nb_it_rand.append(nb_it_rand)
+        tab_nb_it_tot.append(it_tot)
+        tab_nb_it_rand.append(it_rand)
         tab.append(i)
     
     # comparaison des nombres d'iterations  
     print(tab_nb_it_tot)
     print(tab_nb_it_rand)
+
+    xaxis = list(range(4, Nmax, 2))
     
-    # # graphique des résultats
-    # plt.plot(tab_nb_it_tot, label="ordre total")
-    # plt.plot(tab_nb_it_rand, label="ordre random")
-    # # plt.axis([xmin, xmax, ymin, ymax])
-    # plt.axis([0, len(tab), 0, Nmax])
-    # plt.legend()
-    # plt.show()
+    # graphique des résultats
+    plt.plot(xaxis, tab_nb_it_tot, label="ordre total")
+    plt.plot(xaxis, tab_nb_it_rand, label="ordre random")
+    # plt.axis([xmin, xmax, ymin, ymax])
+    # plt.axis(list(range(4, Nmax, 2)))
+    plt.title("Comparaison du nombre d'itérations des deux ordres \n selon la taille du graphe")
+    plt.xlabel("Nombre de sommets")
+    plt.ylabel("Nombre d'itérations")
+    plt.legend()
+    plt.show()
         
    
