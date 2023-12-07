@@ -261,7 +261,7 @@ def union(G1, G2) :
 
     for sommet in G1.keys():
         G[sommet] = list(set(G1[sommet] + G2[sommet]))  # On concatène les listes d'arêtes des deux graphes (on caste en set au milieu pour enlever les doublons)
-        
+
     return G
 
 def ordre_tot(G, s, nbGraphes):
@@ -290,47 +290,89 @@ def ordre_tot(G, s, nbGraphes):
 
     return GloutonFas(T), H
 
-            
+
+# def create_graph_random(n, p) :
+#     """
+#     Renvoie un graphe aléatoire de n sommets, avec une probabilité p d'avoir une arête entre deux sommets
+#     """
+#     G = dict()
+#
+#     # sommet source
+#     nb_arcs = random.randint(n//2, n)
+#     sommet_source = 0
+#     l_aretes = []
+#     for j in range(nb_arcs) :
+#         poids = random.randint(-10, 10)
+#         successeur = random.randint(0, n-1)
+#
+#         while successeur == sommet_source :
+#             successeur = random.randint(0, n-1)
+#
+#         l_aretes.append((successeur, poids))
+#
+#     G[sommet_source] = l_aretes
+#
+#    # les autres sommets
+#     for i in range(1, n) :
+#         l_aretes = []
+#         nb_arcs = random.randint(0, n)
+#         for j in range(nb_arcs) :
+#             # test si arc présentes
+#             q = random.random()
+#             if q <= p :
+#                 poids = random.randint(-10, 10)
+#                 successeur = random.randint(1, n-1)
+#                 # si jamais le successeur = au sommet courant
+#                 # pour éviter les boucles
+#                 while successeur == i :
+#                     successeur = random.randint(1, n-1)
+#                 l_aretes.append((successeur, poids))
+#         G[i] = l_aretes
+#
+#
+#     return G, sommet_source
+
 def create_graph_random(n, p) :
+    G = {i: [] for i in range(n)}
+
+    for u in range(n):
+        for v in range(n):
+            if u != v and random.random() < p:
+                G[u].append((v, random.randint(-10, 10)))
+
+    sources_candidates = [s for s in range(n) if candidat_source(G, s)]
+
+    return G, random.choice(sources_candidates)
+
+def candidat_source(G, s):
     """
-    Renvoie un graphe aléatoire de n sommets, avec une probabilité p d'avoir une arête entre deux sommets
+    Vérifie si le sommet s peut être choisi comme source de G
+
+    Paramètres:
+        G : dict(int : list[(int, int)]) - Un graphe G
+        s: int - le sommet dont on veut vérifier s'il peut être une source
+        nbGraphes : le nombre de graphes aléatoires à générer pour déterminer l'ordre
+
+    Valeur de retour :
+        bool - True si le sommet peut être une source (a accès à la moitié des sommets) faux sinon
     """
-    G = dict()
-    
-    # sommet source
-    nb_arcs = random.randint(n//2, n)
-    sommet_source = 0
-    l_aretes = []
-    for j in range(nb_arcs) :
-        poids = random.randint(-10, 10)
-        successeur = random.randint(0, n-1)
-       
-        while successeur == sommet_source :
-            successeur = random.randint(0, n-1)
-        
-        l_aretes.append((successeur, poids))
-     
-    G[sommet_source] = l_aretes
-    
-   # les autres sommets
-    for i in range(1, n) :
-        l_aretes = []
-        nb_arcs = random.randint(0, n)
-        for j in range(nb_arcs) :
-            # test si arc présentes
-            q = random.random()
-            if q <= p :
-                poids = random.randint(-10, 10)
-                successeur = random.randint(1, n-1)
-                # si jamais le successeur = au sommet courant
-                # pour éviter les boucles
-                while successeur == i :
-                    successeur = random.randint(1, n-1)
-                l_aretes.append((successeur, poids))
-        G[i] = l_aretes
-    
-    
-    return G, sommet_source
+    # On effectue un BFS pour marquer les sommets accessibles depuis le sommet source
+    n = len(G)
+    visited = [0] * n
+    pile = [s]
+
+    while pile:  # On traite des sommets tant que la pile n'est pas vide
+        u = pile.pop()
+
+        if not visited[u]:
+            visited[u] = 1
+
+            for v in G[u]:  # On ajoute les voisins de u dans la pile
+                pile.append(v[0])
+
+    return sum(visited) - 1 >= n - n//2  # Retourne vrai si on a visité plus de la moitié des sommets
+
+
 
 def detection_circuit_negatif(G, s) :
     """
@@ -357,13 +399,13 @@ def detection_circuit_negatif(G, s) :
             break
         else:
             nb_it += 1
-    
+
     # verifie si il y a un circuit négatif
     for u, v in G.items() :
         for arcs in v :
             if d[u] + arcs[1] < d[arcs[0]]:
                 return True
-    
+
     return False
 
 if __name__ == "__main__":
@@ -381,15 +423,15 @@ if __name__ == "__main__":
 
     # s = GloutonFas(G)
     # print(f"{s=}")
-    
+
     # # Question 3
     # print(f"\n -- Exemple 3 --\n\n{G=}\n")
     # G1, G2, G3, H = creation_graphes(G)
-    
+
     # # Question 4 / 5
     # tot = ordre_tot(H, 0)
     # print(f"{tot=}\n")
- 
+
     # # Questions 6 / 7
     # s = 4
     # # ordre total
@@ -397,12 +439,12 @@ if __name__ == "__main__":
     # # ordre random
     # ordre_rand = list(H.keys())
     # random.shuffle(ordre_rand)
-    
+
     # arb_rand, nb_it_rand = Bellman_Ford(H, s, ordre_rand)
     # print(f"{arb_tot=}\n{nb_it_tot=}\n")
     # print(f"{arb_rand=}\n{nb_it_rand=}\n")
-    
-    
+
+
     # génération graphes
     Nmax = 10
     n = 5
@@ -416,18 +458,18 @@ if __name__ == "__main__":
                 G, s = create_graph_random(n, p)
 
         G1, G2, G3, H = creation_graphes(G)
-    
+
         tot = ordre_tot(H, 0)
         print(f"{tot=}\n")
-        
+
         arb_tot, nb_it_tot = Bellman_Ford(H, s, tot)
-        
+
         ordre_rand = list(H.keys())
         random.shuffle(ordre_rand)
-        
+
         arb_rand, nb_it_rand = Bellman_Ford(H, s, ordre_rand)
         print(f"{arb_tot=}\n{nb_it_tot=}\n")
         print(f"{arb_rand=}\n{nb_it_rand=}\n")
 
-    
-  
+
+
