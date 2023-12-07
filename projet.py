@@ -3,10 +3,8 @@ import functools
 import sys
 import random
 import copy
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 from exemples import *
-
-
 # Question 1
 def Bellman_Ford(G, s, ordre):
     """
@@ -208,6 +206,49 @@ def GloutonFas(G):
     return s1 + s2[::-1]  # On inverse s2 (on l'a construite à l'envers)
 
 
+# def creation_graphes(G) :
+#     """
+#     A partir de G, on crée 4 graphes : G1, G2, G3, H qui nous permet de tester l'efficacité des l'algorithmes 
+#     On choisit de manière uniforme et aléatoire les poids des arcs dans l'intervalle [-10, 10]
+
+#     Paramètres:
+#         G : dict(int : list[(int, int)]) -
+#             Graphe, représenté sous la forme d'un dictionnaire.
+#             Les keys (int) sont tous les sommets du graphe.
+#             Les values (list[(int, int)]) sont tous les sommets sortant du sommet et sont représentées sous la forme d'un tuple avec comme deuxième element le poids associé
+    
+#     Valeur de retour :
+#         G1, G2, G3, H : dict(int : list[(int, int)]) -
+#             Graphe, représenté sous la forme d'un dictionnaire.
+#             Les keys (int) sont tous les sommets du graphe.
+#             Les values (list[(int, int)]) sont tous les sommets sortant du sommet et sont représentées sous la forme d'un tuple avec comme deuxième element le poids associé
+#     """
+
+#     G1 = copy.deepcopy(G)
+#     G2 = copy.deepcopy(G)
+#     G3 = copy.deepcopy(G)
+#     H = copy.deepcopy(G)
+
+#     for u, v in G1.items():
+#         for i in range(len(v)): # i : indice de l'arc
+#             v[i] = (v[i][0], random.randint(-10, 10))
+
+#     for u, v in G2.items():
+#         for i in range(len(v)):
+#             v[i] = (v[i][0], random.randint(-10, 10))
+
+#     for u, v in G3.items():
+#         for i in range(len(v)):
+#             v[i] = (v[i][0], random.randint(-10, 10))
+
+#     for u, v in H.items():
+#         for i in range(len(v)):
+#             v[i] = (v[i][0], random.randint(-10, 10))
+
+#     return G1, G2, G3, H
+
+# fonction creation_graphes mais avec n graphes
+
 def creation_graphes(G, n) :
     """
     A partir de G, on crée n graphes : G1, G2, ..., G(n-1), H qui nous permet de tester l'efficacité des algorithmes
@@ -261,8 +302,9 @@ def union(G1, G2) :
 
     for sommet in G1.keys():
         G[sommet] = list(set(G1[sommet] + G2[sommet]))  # On concatène les listes d'arêtes des deux graphes (on caste en set au milieu pour enlever les doublons)
-
+        
     return G
+
 
 def ordre_tot(G, s, nbGraphes):
     """
@@ -289,60 +331,6 @@ def ordre_tot(G, s, nbGraphes):
     print(f"{T=}")
 
     return GloutonFas(T), H
-
-
-# def create_graph_random(n, p) :
-#     """
-#     Renvoie un graphe aléatoire de n sommets, avec une probabilité p d'avoir une arête entre deux sommets
-#     """
-#     G = dict()
-#
-#     # sommet source
-#     nb_arcs = random.randint(n//2, n)
-#     sommet_source = 0
-#     l_aretes = []
-#     for j in range(nb_arcs) :
-#         poids = random.randint(-10, 10)
-#         successeur = random.randint(0, n-1)
-#
-#         while successeur == sommet_source :
-#             successeur = random.randint(0, n-1)
-#
-#         l_aretes.append((successeur, poids))
-#
-#     G[sommet_source] = l_aretes
-#
-#    # les autres sommets
-#     for i in range(1, n) :
-#         l_aretes = []
-#         nb_arcs = random.randint(0, n)
-#         for j in range(nb_arcs) :
-#             # test si arc présentes
-#             q = random.random()
-#             if q <= p :
-#                 poids = random.randint(-10, 10)
-#                 successeur = random.randint(1, n-1)
-#                 # si jamais le successeur = au sommet courant
-#                 # pour éviter les boucles
-#                 while successeur == i :
-#                     successeur = random.randint(1, n-1)
-#                 l_aretes.append((successeur, poids))
-#         G[i] = l_aretes
-#
-#
-#     return G, sommet_source
-
-def create_graph_random(n, p) :
-    G = {i: [] for i in range(n)}
-
-    for u in range(n):
-        for v in range(n):
-            if u != v and random.random() < p:
-                G[u].append((v, random.randint(-10, 10)))
-
-    sources_candidates = [s for s in range(n) if candidat_source(G, s)]
-
-    return G, random.choice(sources_candidates)
 
 def candidat_source(G, s):
     """
@@ -373,6 +361,18 @@ def candidat_source(G, s):
     return sum(visited) - 1 >= n - n//2  # Retourne vrai si on a visité plus de la moitié des sommets
 
 
+def create_graph_random(n, p) :
+    G = {i: [] for i in range(n)}
+
+    for u in range(n):
+        for v in range(n):
+            if u != v and random.random() < p:
+                G[u].append((v, random.randint(-10, 10)))
+
+    sources_candidates = [s for s in range(n) if candidat_source(G, s)]
+
+    return G, random.choice(sources_candidates)
+
 
 def detection_circuit_negatif(G, s) :
     """
@@ -399,13 +399,13 @@ def detection_circuit_negatif(G, s) :
             break
         else:
             nb_it += 1
-
+    
     # verifie si il y a un circuit négatif
     for u, v in G.items() :
         for arcs in v :
             if d[u] + arcs[1] < d[arcs[0]]:
                 return True
-
+    
     return False
 
 if __name__ == "__main__":
@@ -423,15 +423,15 @@ if __name__ == "__main__":
 
     # s = GloutonFas(G)
     # print(f"{s=}")
-
+    
     # # Question 3
     # print(f"\n -- Exemple 3 --\n\n{G=}\n")
     # G1, G2, G3, H = creation_graphes(G)
-
+    
     # # Question 4 / 5
     # tot = ordre_tot(H, 0)
     # print(f"{tot=}\n")
-
+ 
     # # Questions 6 / 7
     # s = 4
     # # ordre total
@@ -439,37 +439,52 @@ if __name__ == "__main__":
     # # ordre random
     # ordre_rand = list(H.keys())
     # random.shuffle(ordre_rand)
-
+    
     # arb_rand, nb_it_rand = Bellman_Ford(H, s, ordre_rand)
     # print(f"{arb_tot=}\n{nb_it_tot=}\n")
     # print(f"{arb_rand=}\n{nb_it_rand=}\n")
+    
 
-
-    # génération graphes
-    Nmax = 10
-    n = 5
+    # Question 9
+    Nmax = 20
     p = 0.5
-    for i in range(Nmax) :
-        #création du graphe sans circuit à poids négatif
-        G, s = create_graph_random(n, p)
-        print(G)
+    tab_nb_it_tot = [] # nb itérations pour ordre total
+    tab_nb_it_rand=  [] # nb itérations pour ordre random
+    tab = [] # sommets
+    
+    for i in range(4, Nmax, 2) :
+        G, s = create_graph_random(i, p)
         if (detection_circuit_negatif(G, s)) :
             while (detection_circuit_negatif(G, s)) : # si detection de graphe circuit
-                G, s = create_graph_random(n, p)
-
-        G1, G2, G3, H = creation_graphes(G)
-
-        tot = ordre_tot(H, 0)
-        print(f"{tot=}\n")
-
+                G, s = create_graph_random(i, p)
+        
+        # ordre total
+        # print("on est la")
+        tot, H = ordre_tot(G, s, 4)
+        # print("on est la2")
+        # print(tot)
         arb_tot, nb_it_tot = Bellman_Ford(H, s, tot)
-
+        
+        # ordre random
         ordre_rand = list(H.keys())
         random.shuffle(ordre_rand)
-
         arb_rand, nb_it_rand = Bellman_Ford(H, s, ordre_rand)
-        print(f"{arb_tot=}\n{nb_it_tot=}\n")
-        print(f"{arb_rand=}\n{nb_it_rand=}\n")
-
-
-
+        
+        # ajout dans les tableaux  
+        tab_nb_it_tot.append(nb_it_tot)
+        tab_nb_it_rand.append(nb_it_rand)
+        tab.append(i)
+    
+    # comparaison des nombres d'iterations  
+    print(tab_nb_it_tot)
+    print(tab_nb_it_rand)
+    
+    # # graphique des résultats
+    # plt.plot(tab_nb_it_tot, label="ordre total")
+    # plt.plot(tab_nb_it_rand, label="ordre random")
+    # # plt.axis([xmin, xmax, ymin, ymax])
+    # plt.axis([0, len(tab), 0, Nmax])
+    # plt.legend()
+    # plt.show()
+        
+   
