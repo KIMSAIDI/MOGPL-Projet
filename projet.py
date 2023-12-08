@@ -212,7 +212,7 @@ def GloutonFas(G):
 def creation_graphes(G, n, s) :
     """
     A partir de G, on crée n graphes : G1, G2, ..., G(n-1), H qui nous permet de tester l'efficacité des algorithmes
-    On choisit de manière uniforme et aléatoire les poids des arcs dans l'intervalle [-10, 10]
+    On choisit de manière uniforme et aléatoire les poids des arcs dans l'intervalle [-5, 10]
 
     Paramètres:
         G : dict(int : list[(int, int)]) -
@@ -243,15 +243,15 @@ def creation_graphes(G, n, s) :
 def creation_H_graphe(G, s) :
     """
     Crée le graphe Test H
-
-    Args:
+    On choisit de manière uniforme et aléatoire les poids des arcs dans l'intervalle [-5, 10]
+    Paramètres:
         G : dict(int : list[(int, int)]) -
             Graphe, représenté sous la forme d'un dictionnaire.
             Les keys (int) sont tous les sommets du graphe.
             Les values (list[(int, int)]) sont tous les sommets sortant du sommet et sont représentées sous la forme d'un tuple avec comme deuxième element le poids associé
         s : la source du graphe
 
-    Returns:
+    Valeur de retour:
         H : dict(int : list[(int, int)]) -
             Graphe, représenté sous la forme d'un dictionnaire.
             Les keys (int) sont tous les sommets du graphe.
