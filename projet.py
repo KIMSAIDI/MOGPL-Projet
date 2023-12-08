@@ -407,7 +407,8 @@ if __name__ == "__main__":
     # s = 4
 
     # Question 4 / 5
-    # tot, H = ordre_tot(G, 0, 4)
+    # tot = ordre_tot(G, 0, 4)
+    # H = creation_H_graphe(G, s)
     # print(f"{tot=}\n")
     #
     # # Questions 6 / 7
