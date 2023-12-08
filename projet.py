@@ -65,8 +65,8 @@ def Bellman_Ford(G, s, ordre):
 
         if boolean:  # l'algorithme a convergé
             break
-        else:
-            nb_it += 1
+        
+        nb_it += 1
 
     # On reconstruit l'arborescence des chemins les plus courts à partir des parents
     arborescence = {u: [] for u in G.keys()}
@@ -209,49 +209,6 @@ def GloutonFas(G):
     return s1 + s2[::-1]  # On inverse s2 (on l'a construite à l'envers)
 
 
-# def creation_graphes(G) :
-#     """
-#     A partir de G, on crée 4 graphes : G1, G2, G3, H qui nous permet de tester l'efficacité des l'algorithmes 
-#     On choisit de manière uniforme et aléatoire les poids des arcs dans l'intervalle [-10, 10]
-
-#     Paramètres:
-#         G : dict(int : list[(int, int)]) -
-#             Graphe, représenté sous la forme d'un dictionnaire.
-#             Les keys (int) sont tous les sommets du graphe.
-#             Les values (list[(int, int)]) sont tous les sommets sortant du sommet et sont représentées sous la forme d'un tuple avec comme deuxième element le poids associé
-    
-#     Valeur de retour :
-#         G1, G2, G3, H : dict(int : list[(int, int)]) -
-#             Graphe, représenté sous la forme d'un dictionnaire.
-#             Les keys (int) sont tous les sommets du graphe.
-#             Les values (list[(int, int)]) sont tous les sommets sortant du sommet et sont représentées sous la forme d'un tuple avec comme deuxième element le poids associé
-#     """
-
-#     G1 = copy.deepcopy(G)
-#     G2 = copy.deepcopy(G)
-#     G3 = copy.deepcopy(G)
-#     H = copy.deepcopy(G)
-
-#     for u, v in G1.items():
-#         for i in range(len(v)): # i : indice de l'arc
-#             v[i] = (v[i][0], random.randint(-10, 10))
-
-#     for u, v in G2.items():
-#         for i in range(len(v)):
-#             v[i] = (v[i][0], random.randint(-10, 10))
-
-#     for u, v in G3.items():
-#         for i in range(len(v)):
-#             v[i] = (v[i][0], random.randint(-10, 10))
-
-#     for u, v in H.items():
-#         for i in range(len(v)):
-#             v[i] = (v[i][0], random.randint(-10, 10))
-
-#     return G1, G2, G3, H
-
-# fonction creation_graphes mais avec n graphes
-
 def creation_graphes(G, n, s) :
     """
     A partir de G, on crée n graphes : G1, G2, ..., G(n-1), H qui nous permet de tester l'efficacité des algorithmes
@@ -268,14 +225,9 @@ def creation_graphes(G, n, s) :
     Valeur de retour :
         graphes : list[dict(int : list[(int, int)])]
             Une liste de graphes G1, G2, ..., G(n-1) générés
-        H : dict(int : list[(int, int)]) -
-            Graphe, représenté sous la forme d'un dictionnaire.
-            Les keys (int) sont tous les sommets du graphe.
-            Les values (list[(int, int)]) sont tous les sommets sortant du sommet et sont représentées sous la forme d'un tuple avec comme deuxième element le poids associé
-    """
+        """
 
-    graphes = [copy.deepcopy(G) for _ in range(n-1)]
-    H = copy.deepcopy(G)
+    graphes = [copy.deepcopy(G) for _ in range(n)]
 
     for graphe in graphes:
         for u, v in graphe.items():
@@ -286,6 +238,27 @@ def creation_graphes(G, n, s) :
                 for i in range(len(v)):  # i : indice de l'arc
                     v[i] = (v[i][0], random.randint(-5, 15))
 
+    return graphes
+
+def creation_H_graphe(G, s) :
+    """
+    Crée le graphe Test H
+
+    Args:
+        G : dict(int : list[(int, int)]) -
+            Graphe, représenté sous la forme d'un dictionnaire.
+            Les keys (int) sont tous les sommets du graphe.
+            Les values (list[(int, int)]) sont tous les sommets sortant du sommet et sont représentées sous la forme d'un tuple avec comme deuxième element le poids associé
+        s : la source du graphe
+
+    Returns:
+        H : dict(int : list[(int, int)]) -
+            Graphe, représenté sous la forme d'un dictionnaire.
+            Les keys (int) sont tous les sommets du graphe.
+            Les values (list[(int, int)]) sont tous les sommets sortant du sommet et sont représentées sous la forme d'un tuple avec comme deuxième element le poids associé
+    
+    """
+    H = copy.deepcopy(G)
     for u, v in H.items():
         for i in range(len(v)):
             v[i] = (v[i][0], random.randint(-5, 15))
@@ -293,10 +266,11 @@ def creation_graphes(G, n, s) :
         for u, v in H.items():
             for i in range(len(v)):
                 v[i] = (v[i][0], random.randint(-5, 15))
-
-    return graphes, H
-
-
+                
+    return H
+    
+    
+    
 def union(G1, G2) :
     """
     Retourne l'union de deux graphes en choissisant les plus courts chemins
@@ -330,7 +304,7 @@ def ordre_tot(G, s, nbGraphes):
     Valeur de retour :
         list[int] - L'ordre <tot déterminé
     """
-    graphes, H = creation_graphes(G, nbGraphes, s)
+    graphes = creation_graphes(G, nbGraphes, s)
     resultats = [Bellman_Ford(graphe, s, G.keys()) for graphe in graphes]
 
     arb = [t[0] for t in resultats]
@@ -339,7 +313,7 @@ def ordre_tot(G, s, nbGraphes):
     T = functools.reduce(union, arb)  # Applique la fonction union sur G1 et G2, puis le résultat et G3 ... jusqu'à ce qu'il reste un seul élément
     # print(f"{T=}")
 
-    return GloutonFas(T), H
+    return GloutonFas(T)
 
 def candidat_source(G, s):
     """
@@ -435,7 +409,12 @@ if __name__ == "__main__":
     
     # # Question 3
     # print(f"\n -- Exemple 3 --\n\n{G=}\n")
-    # G1, G2, G3, H = creation_graphes(G)
+    # graphes = creation_graphes(G, 3)
+    # G1 = grpahes[0]
+    # G2 = graphes[1]
+    # G3 = graphes[2]
+    # H = creation_H_graphe(G, s)
+    
     
     # # Question 4 / 5
     # tot = ordre_tot(H, 0)
@@ -461,7 +440,6 @@ if __name__ == "__main__":
     # tab_nb_it_tot = [] # nb itérations pour ordre total
     # tab_nb_it_rand=  [] # nb itérations pour ordre random
     # tab = [] # sommets
-
     # for i in range(4, Nmax, pas) :
     #     it_tot = 0
     #     it_rand = 0
@@ -473,10 +451,8 @@ if __name__ == "__main__":
     #             G, s = create_graph_random(i, math.sqrt(i)/i)
 
     #         # ordre total
-    #         # print("on est la")
-    #         tot, H = ordre_tot(G, s, 4)
-    #         # print("on est la2")
-    #         # print(tot)
+    #         tot = ordre_tot(G, s, 4)
+    #         H = creation_H_graphe(G, s)
     #         arb_tot, nb_it_tot = Bellman_Ford(H, s, tot)
     #         # ordre random
     #         ordre_rand = list(H.keys())
@@ -501,8 +477,6 @@ if __name__ == "__main__":
     # # graphique des résultats
     # plt.plot(xaxis, tab_nb_it_tot, label="ordre <tot")
     # plt.plot(xaxis, tab_nb_it_rand, label="ordre random")
-    # # plt.axis([xmin, xmax, ymin, ymax])
-    # # plt.axis(list(range(4, Nmax, 2)))
     # plt.title("Comparaison du nombre d'itérations des deux ordres \n selon la taille du graphe")
     # plt.xlabel("Nombre de sommets")
     # plt.ylabel("Nombre d'itérations")
@@ -514,21 +488,28 @@ if __name__ == "__main__":
     # Question 10
     
     nb_sommets = 20
-    nb_Graphes = 60
+    nb_Graphes = 50
     tab_it = []
     
     G, s = create_graph_random(nb_sommets, math.sqrt(nb_sommets)/nb_sommets)
     while (detection_circuit_negatif(G, s)) :
         G, s = create_graph_random(nb_sommets, math.sqrt(nb_sommets)/nb_sommets)
     
-    for i in range(10, nb_Graphes) : 
-        print(i,"/",nb_Graphes)     
-        tot, H = ordre_tot(G, s, i)
+    H = creation_H_graphe(G, s)
+    
+    for i in range(5, nb_Graphes) : 
+        print(f"{i}/{nb_Graphes}")
+        tot = ordre_tot(G, s, i)
         arb_tot, nb_it_tot = Bellman_Ford(H, s, tot)
         tab_it.append(nb_it_tot)
         
+        
     print(tab_it)
-    xaxis = list(range(10, nb_Graphes))
+    xaxis = list(range(5, nb_Graphes))
     plt.plot(xaxis, tab_it, label="ordre <tot")
+    plt.title(f"Nombre d'itérations de l'ordre <tot selon le nombre de graphes utilisés\npour {nb_sommets} sommets")
+    plt.xlabel("Nombre de graphes")
+    plt.ylabel("Nombre d'itérations")
     plt.savefig("nb_it_tot.png")
     plt.show()
+ 
