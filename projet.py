@@ -1,25 +1,24 @@
 # -*- coding: utf-8 -*-
+import copy
 import functools
 import math
-import sys
 import random
-import copy
+import sys
 
 from matplotlib import pyplot as plt
 
-# import matplotlib.pyplot as plt
-from exemples import *
+
 # Question 1
 def Bellman_Ford(G, s, ordre):
     """
     Renvoie l'algorithme de Bellman_Ford.
     Le graphe ne contient aucun circuit négatif (d'après énoncé).
 
-    Paramètres:
+    Paramètres :
         G : dict(int : list[(int, int)]) -
             Graphe, représenté sous la forme d'un dictionnaire. 
-            Les keys (int) sont tous les sommets du graphes. 
-            Les values (list[(int, int)]) sont tous les sommets sortant du sommet et sont representés sous la formes d'un tuples avec comme deuxième element le poid associé
+            Les keys (int) sont tous les sommets du graphe.
+            Les values (list[(int, int)]) sont tous les sommets sortant du sommet et sont représentés sous la forme d'un tuple avec comme deuxième element le poids associé
         
         s : int - sommet
 
@@ -28,13 +27,13 @@ def Bellman_Ford(G, s, ordre):
     Valeurs de retour
         dict(int : list[(int, int)])
             Un dictionnaire représentant l'arborescence des plus courts chemins (chemins considérés par l'algorithme à l'itération finale)
-            Le format est celui d'un graphe classique (voir l'entrée), les arêtes ne sont pas valuées (=0) mais le poids est gardé pour avoir le même format
+            Le format est celui d'un graphe classique (voir l'entrée), les arcs ne sont pas valués (=0) mais le poids est gardé pour avoir le même format
 
         int
             Le nombre d'itérations effectuées par l'algorithme
 
     """
-    # n : nombre de sommet dans G
+    # n : nombre de sommets dans G
     n = len(G)
     # nb_it : nombre d'itérations nécessaire avant la convergence de l'algorithme
     nb_it = 0
@@ -49,7 +48,7 @@ def Bellman_Ford(G, s, ordre):
         # boolean qui va nous permettre de savoir si l'algorithme a convergé
         boolean = True
         # u : sommet
-        # v : liste des arcs sortant de u avec le poid correspondant
+        # v : liste des arcs sortant de u avec le poids correspondant
         for u in ordre:
             v = G[u]
             # arcs : tuple(int, int) ; arcs[0] : sommet, arcs[1] : poids
@@ -65,7 +64,7 @@ def Bellman_Ford(G, s, ordre):
 
         if boolean:  # l'algorithme a convergé
             break
-        
+
         nb_it += 1
 
     # On reconstruit l'arborescence des chemins les plus courts à partir des parents
@@ -159,7 +158,7 @@ def max_delta(G):
         int | None
         Le numéro d'un sommet u tel que δ(u) soit maximal, None si le graphe ne comporte pas de sommet
     """
-    if not G:  # Si le graphe est vide il n'y a pas de sommet à retourner
+    if not G:  # Si le graphe est vide, il n'y a pas de sommet à retourner
         return
 
     entrants = nombre_entrants(G)
@@ -182,7 +181,7 @@ def GloutonFas(G):
 
     Valeur de retour :
         list([int])
-        Permutation des sommets du graphe, le ième élément de la liste représente le ième sommet de la permutation
+        Permutation des sommets du graphe, le i-ème élément de la liste représente le i-ème sommet de la permutation
     """
     G = G.copy()  # On ne souhaite pas modifier le graphe originel
     s1, s2 = [], []
@@ -209,12 +208,12 @@ def GloutonFas(G):
     return s1 + s2[::-1]  # On inverse s2 (on l'a construite à l'envers)
 
 
-def creation_graphes(G, n, s) :
+def creation_graphes(G, n, s):
     """
     A partir de G, on crée n graphes : G1, G2, ..., G(n-1), H qui nous permet de tester l'efficacité des algorithmes
     On choisit de manière uniforme et aléatoire les poids des arcs dans l'intervalle [-5, 10]
 
-    Paramètres:
+    Paramètres :
         G : dict(int : list[(int, int)]) -
             Graphe, représenté sous la forme d'un dictionnaire.
             Les keys (int) sont tous les sommets du graphe.
@@ -231,7 +230,7 @@ def creation_graphes(G, n, s) :
 
     for graphe in graphes:
         for u, v in graphe.items():
-            for i in range(len(v)): # i : indice de l'arc
+            for i in range(len(v)):  # i : indice de l'arc
                 v[i] = (v[i][0], random.randint(-5, 15))
         while detection_circuit_negatif(graphe, s):
             for u, v in graphe.items():
@@ -240,18 +239,19 @@ def creation_graphes(G, n, s) :
 
     return graphes
 
-def creation_H_graphe(G, s) :
+
+def creation_H_graphe(G, s):
     """
     Crée le graphe Test H
     On choisit de manière uniforme et aléatoire les poids des arcs dans l'intervalle [-5, 10]
-    Paramètres:
+    Paramètres :
         G : dict(int : list[(int, int)]) -
             Graphe, représenté sous la forme d'un dictionnaire.
             Les keys (int) sont tous les sommets du graphe.
             Les values (list[(int, int)]) sont tous les sommets sortant du sommet et sont représentées sous la forme d'un tuple avec comme deuxième element le poids associé
         s : la source du graphe
 
-    Valeur de retour:
+    Valeur de retour :
         H : dict(int : list[(int, int)]) -
             Graphe, représenté sous la forme d'un dictionnaire.
             Les keys (int) sont tous les sommets du graphe.
@@ -266,17 +266,16 @@ def creation_H_graphe(G, s) :
         for u, v in H.items():
             for i in range(len(v)):
                 v[i] = (v[i][0], random.randint(-5, 15))
-                
+
     return H
-    
-    
-    
-def union(G1, G2) :
+
+
+def union(G1, G2):
     """
-    Retourne l'union de deux graphes en choissisant les plus courts chemins
+    Retourne l'union de deux graphes en choisissant les plus courts chemins
     On part du principe que G1 et G2 sont des graphes sans circuit négatif qui sont identiques (diffère seulement sur la valeur des poids des arcs)
     
-    Paramètres:
+    Paramètres :
         G1 dict(int : list[(int, int)]) - Graphe
         G2 dict(int : list[(int, int)]) - Graphe
     
@@ -288,7 +287,7 @@ def union(G1, G2) :
 
     for sommet in G1.keys():
         G[sommet] = list(set(G1[sommet] + G2[sommet]))  # On concatène les listes d'arêtes des deux graphes (on caste en set au milieu pour enlever les doublons)
-        
+
     return G
 
 
@@ -296,7 +295,7 @@ def ordre_tot(G, s, nbGraphes):
     """
     Retourne un ordre <tot à partir d'un graphe
 
-    Paramètre:
+    Paramètre :
         G : dict(int : list[(int, int)]) - Le graphe
         s: int - la source depuis laquelle exécuter bellman_ford
         nbGraphes : le nombre de graphes aléatoires à générer pour déterminer l'ordre
@@ -315,13 +314,14 @@ def ordre_tot(G, s, nbGraphes):
 
     return GloutonFas(T)
 
+
 def candidat_source(G, s):
     """
     Vérifie si le sommet s peut être choisi comme source de G
 
-    Paramètres:
+    Paramètres :
         G : dict(int : list[(int, int)]) - Un graphe G
-        s: int - le sommet dont on veut vérifier s'il peut être une source
+        s : int - le sommet dont on veut vérifier s'il peut être une source
         nbGraphes : le nombre de graphes aléatoires à générer pour déterminer l'ordre
 
     Valeur de retour :
@@ -341,34 +341,34 @@ def candidat_source(G, s):
             for v in G[u]:  # On ajoute les voisins de u dans la pile
                 pile.append(v[0])
 
-    return sum(visited) - 1 >= n - n//2  # Retourne vrai si on a visité plus de la moitié des sommets
+    return sum(visited) - 1 >= n - n // 2  # Retourne vrai si on a visité plus de la moitié des sommets
 
 
-def create_graph_random(n, p) :
-    G = {i: [] for i in range(1, n+1)}
+def create_graph_random(n, p):
+    G = {i: [] for i in range(1, n + 1)}
 
-    for u in range(1, n+1):
-        for v in range(1, n+1):
+    for u in range(1, n + 1):
+        for v in range(1, n + 1):
             if u != v and random.random() < p:
                 G[u].append((v, random.randint(-5, 15)))
 
-    sources_candidates = [s for s in range(1, n+1) if candidat_source(G, s)]
+    sources_candidates = [s for s in range(1, n + 1) if candidat_source(G, s)]
 
     return G, random.choice(sources_candidates)
 
 
-def detection_circuit_negatif(G, s) :
+def detection_circuit_negatif(G, s):
     """
-    Detecte grâce a l'algorithme Bellman-Ford si G est un circuit négatif
+    Détecte grâce à l'algorithme Bellman-Ford si G est un circuit négatif
     """
     n = len(G)
     nb_it = 0
     d = {u: 0 if u == s else sys.maxsize for u in G.keys()}
     # boucle principale
-    for i in range(n-1):
+    for i in range(n - 1):
         boolean = True
         # u : sommet
-        # v : liste des arcs sortant de u avec le poid correspondant
+        # v : liste des arcs sortant de u avec le poids correspondant
         for u, v in G.items():
             # arcs : tuple(int, int) ; arcs[0] : sommet, arcs[1] : poids
             for arcs in v:
@@ -382,56 +382,44 @@ def detection_circuit_negatif(G, s) :
             break
         else:
             nb_it += 1
-    
-    # verifie si il y a un circuit négatif
-    for u, v in G.items() :
-        for arcs in v :
+
+    # vérifie s'il y a un circuit négatif
+    for u, v in G.items():
+        for arcs in v:
             if d[u] + arcs[1] < d[arcs[0]]:
                 return True
-    
+
     return False
 
+
 if __name__ == "__main__":
-    # G = exemple2()
-
-    # print(f"{G=}")
-
-    # # Sommet source
-    # s = 1
-
-    # # Question 1 / 2
-    # arborescence, nb_it = Bellman_Ford(G, s, G.keys())
-    # print("arborescence = ", arborescence)
-    # print("Nombre iterations = ", nb_it)
-
-    # s = GloutonFas(G)
-    # print(f"{s=}")
-    
-    # # Question 3
-    # print(f"\n -- Exemple 3 --\n\n{G=}\n")
-    # graphes = creation_graphes(G, 3)
-    # G1 = grpahes[0]
-    # G2 = graphes[1]
-    # G3 = graphes[2]
-    # H = creation_H_graphe(G, s)
-    
-    
-    # # Question 4 / 5
-    # tot = ordre_tot(H, 0)
-    # print(f"{tot=}\n")
- 
-    # # Questions 6 / 7
+    # Question 3
+    # G = {
+    #         1: [(2, 1), (3, 1)],
+    #         2: [(3, 1)],
+    #         3: [(4, 1)],
+    #         4: [(5, 1), (6, 1), (7, 1)],
+    #         5: [(7, 1)],
+    #         6: [(5, 1), (8, 1)],
+    #         7: [(1, 1)],
+    #         8: [(2, 1), (3, 1)]
+    # }
     # s = 4
+
+    # Question 4 / 5
+    # tot, H = ordre_tot(G, 0, 4)
+    # print(f"{tot=}\n")
+    #
+    # # Questions 6 / 7
     # # ordre total
     # arb_tot, nb_it_tot = Bellman_Ford(H, s, tot)
     # # ordre random
     # ordre_rand = list(H.keys())
     # random.shuffle(ordre_rand)
-    
+    #
     # arb_rand, nb_it_rand = Bellman_Ford(H, s, ordre_rand)
     # print(f"{arb_tot=}\n{nb_it_tot=}\n")
     # print(f"{arb_rand=}\n{nb_it_rand=}\n")
-    
 
     # Question 9
     # Nmax = 31
@@ -462,18 +450,17 @@ if __name__ == "__main__":
     #         it_rand += nb_it_rand
     #         it_tot += nb_it_tot
 
-        
-    #     # ajout dans les tableaux  
+    #     # ajout dans les tableaux
     #     tab_nb_it_tot.append(it_tot / nb_repetitions)
     #     tab_nb_it_rand.append(it_rand / nb_repetitions)
     #     tab.append(i)
-    
-    # # comparaison des nombres d'iterations  
+
+    # # comparaison des nombres d'itérations
     # print(tab_nb_it_tot)
     # print(tab_nb_it_rand)
 
     # xaxis = list(range(4, Nmax, pas))
-    
+
     # # graphique des résultats
     # plt.plot(xaxis, tab_nb_it_tot, label="ordre <tot")
     # plt.plot(xaxis, tab_nb_it_rand, label="ordre random")
@@ -484,26 +471,24 @@ if __name__ == "__main__":
     # plt.savefig("Comparaison_tot_random.png")
     # plt.show()
 
-
     # Question 10
-    
+
     nb_sommets = 20
     nb_Graphes = 50
     tab_it = []
-    
-    G, s = create_graph_random(nb_sommets, math.sqrt(nb_sommets)/nb_sommets)
-    while (detection_circuit_negatif(G, s)) :
-        G, s = create_graph_random(nb_sommets, math.sqrt(nb_sommets)/nb_sommets)
-    
+
+    G, s = create_graph_random(nb_sommets, math.sqrt(nb_sommets) / nb_sommets)
+    while (detection_circuit_negatif(G, s)):
+        G, s = create_graph_random(nb_sommets, math.sqrt(nb_sommets) / nb_sommets)
+
     H = creation_H_graphe(G, s)
-    
-    for i in range(5, nb_Graphes) : 
+
+    for i in range(5, nb_Graphes):
         print(f"{i}/{nb_Graphes}")
         tot = ordre_tot(G, s, i)
         arb_tot, nb_it_tot = Bellman_Ford(H, s, tot)
         tab_it.append(nb_it_tot)
-        
-        
+
     print(tab_it)
     xaxis = list(range(5, nb_Graphes))
     plt.plot(xaxis, tab_it, label="ordre <tot")
@@ -512,4 +497,3 @@ if __name__ == "__main__":
     plt.ylabel("Nombre d'itérations")
     plt.savefig("nb_it_tot.png")
     plt.show()
- 
