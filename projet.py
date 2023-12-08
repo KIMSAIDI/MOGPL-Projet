@@ -455,57 +455,80 @@ if __name__ == "__main__":
     
 
     # Question 9
-    Nmax = 31
-    pas = 5
-    nb_repetitions = 5
-    tab_nb_it_tot = [] # nb itérations pour ordre total
-    tab_nb_it_rand=  [] # nb itérations pour ordre random
-    tab = [] # sommets
+    # Nmax = 31
+    # pas = 5
+    # nb_repetitions = 5
+    # tab_nb_it_tot = [] # nb itérations pour ordre total
+    # tab_nb_it_rand=  [] # nb itérations pour ordre random
+    # tab = [] # sommets
 
-    for i in range(4, Nmax, pas) :
-        it_tot = 0
-        it_rand = 0
-        print(f"{i}/{Nmax}")
-        for j in range(nb_repetitions):
-            print(f"\t{j+1} / {nb_repetitions}")
-            G, s = create_graph_random(i, math.sqrt(i)/i)
-            while (detection_circuit_negatif(G, s)) : # si detection de graphe circuit
-                G, s = create_graph_random(i, math.sqrt(i)/i)
+    # for i in range(4, Nmax, pas) :
+    #     it_tot = 0
+    #     it_rand = 0
+    #     print(f"{i}/{Nmax}")
+    #     for j in range(nb_repetitions):
+    #         print(f"\t{j+1} / {nb_repetitions}")
+    #         G, s = create_graph_random(i, math.sqrt(i)/i)
+    #         while (detection_circuit_negatif(G, s)) : # si detection de graphe circuit
+    #             G, s = create_graph_random(i, math.sqrt(i)/i)
 
-            # ordre total
-            # print("on est la")
-            tot, H = ordre_tot(G, s, 4)
-            # print("on est la2")
-            # print(tot)
-            arb_tot, nb_it_tot = Bellman_Ford(H, s, tot)
-            # ordre random
-            ordre_rand = list(H.keys())
-            random.shuffle(ordre_rand)
-            arb_rand, nb_it_rand = Bellman_Ford(H, s, ordre_rand)
+    #         # ordre total
+    #         # print("on est la")
+    #         tot, H = ordre_tot(G, s, 4)
+    #         # print("on est la2")
+    #         # print(tot)
+    #         arb_tot, nb_it_tot = Bellman_Ford(H, s, tot)
+    #         # ordre random
+    #         ordre_rand = list(H.keys())
+    #         random.shuffle(ordre_rand)
+    #         arb_rand, nb_it_rand = Bellman_Ford(H, s, ordre_rand)
 
-            it_rand += nb_it_rand
-            it_tot += nb_it_tot
+    #         it_rand += nb_it_rand
+    #         it_tot += nb_it_tot
 
         
-        # ajout dans les tableaux  
-        tab_nb_it_tot.append(it_tot / nb_repetitions)
-        tab_nb_it_rand.append(it_rand / nb_repetitions)
-        tab.append(i)
+    #     # ajout dans les tableaux  
+    #     tab_nb_it_tot.append(it_tot / nb_repetitions)
+    #     tab_nb_it_rand.append(it_rand / nb_repetitions)
+    #     tab.append(i)
     
-    # comparaison des nombres d'iterations  
-    print(tab_nb_it_tot)
-    print(tab_nb_it_rand)
+    # # comparaison des nombres d'iterations  
+    # print(tab_nb_it_tot)
+    # print(tab_nb_it_rand)
 
-    xaxis = list(range(4, Nmax, pas))
+    # xaxis = list(range(4, Nmax, pas))
     
-    # graphique des résultats
-    plt.plot(xaxis, tab_nb_it_tot, label="ordre <tot")
-    plt.plot(xaxis, tab_nb_it_rand, label="ordre random")
-    # plt.axis([xmin, xmax, ymin, ymax])
-    # plt.axis(list(range(4, Nmax, 2)))
-    plt.title("Comparaison du nombre d'itérations des deux ordres \n selon la taille du graphe")
-    plt.xlabel("Nombre de sommets")
-    plt.ylabel("Nombre d'itérations")
-    plt.legend()
-    plt.savefig("Comparaison_tot_random.png")
+    # # graphique des résultats
+    # plt.plot(xaxis, tab_nb_it_tot, label="ordre <tot")
+    # plt.plot(xaxis, tab_nb_it_rand, label="ordre random")
+    # # plt.axis([xmin, xmax, ymin, ymax])
+    # # plt.axis(list(range(4, Nmax, 2)))
+    # plt.title("Comparaison du nombre d'itérations des deux ordres \n selon la taille du graphe")
+    # plt.xlabel("Nombre de sommets")
+    # plt.ylabel("Nombre d'itérations")
+    # plt.legend()
+    # plt.savefig("Comparaison_tot_random.png")
+    # plt.show()
+
+
+    # Question 10
+    
+    nb_sommets = 20
+    nb_Graphes = 60
+    tab_it = []
+    
+    G, s = create_graph_random(nb_sommets, math.sqrt(nb_sommets)/nb_sommets)
+    while (detection_circuit_negatif(G, s)) :
+        G, s = create_graph_random(nb_sommets, math.sqrt(nb_sommets)/nb_sommets)
+    
+    for i in range(10, nb_Graphes) : 
+        print(i,"/",nb_Graphes)     
+        tot, H = ordre_tot(G, s, i)
+        arb_tot, nb_it_tot = Bellman_Ford(H, s, tot)
+        tab_it.append(nb_it_tot)
+        
+    print(tab_it)
+    xaxis = list(range(10, nb_Graphes))
+    plt.plot(xaxis, tab_it, label="ordre <tot")
+    plt.savefig("nb_it_tot.png")
     plt.show()
