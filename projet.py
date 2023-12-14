@@ -237,7 +237,7 @@ def creation_graphes(G, n, s):
                 for i in range(len(v)):  # i : indice de l'arc
                     v[i] = (v[i][0], random.randint(-5, 15))
 
-    return graphes
+    return graphes[:-1], graphes[-1]
 
 
 def creation_H_graphe(G, s):
@@ -303,7 +303,7 @@ def ordre_tot(G, s, nbGraphes):
     Valeur de retour :
         list[int] - L'ordre <tot déterminé
     """
-    graphes = creation_graphes(G, nbGraphes, s)
+    graphes, H = creation_graphes(G, nbGraphes, s)
     resultats = [Bellman_Ford(graphe, s, G.keys()) for graphe in graphes]
 
     arb = [t[0] for t in resultats]
@@ -312,7 +312,7 @@ def ordre_tot(G, s, nbGraphes):
     T = functools.reduce(union, arb)  # Applique la fonction union sur G1 et G2, puis le résultat et G3 ... jusqu'à ce qu'il reste un seul élément
     # print(f"{T=}")
 
-    return GloutonFas(T)
+    return GloutonFas(T), H
 
 
 def candidat_source(G, s):
@@ -394,32 +394,32 @@ def detection_circuit_negatif(G, s):
 
 if __name__ == "__main__":
     # Question 3
-    # G = {
-    #         1: [(2, 1), (3, 1)],
-    #         2: [(3, 1)],
-    #         3: [(4, 1)],
-    #         4: [(5, 1), (6, 1), (7, 1)],
-    #         5: [(7, 1)],
-    #         6: [(5, 1), (8, 1)],
-    #         7: [(1, 1)],
-    #         8: [(2, 1), (3, 1)]
-    # }
-    # s = 4
+    G = {
+            1: [(2, 1), (3, 1)],
+            2: [(3, 1)],
+            3: [(4, 1)],
+            4: [(5, 1), (6, 1), (7, 1)],
+            5: [(7, 1)],
+            6: [(5, 1), (8, 1)],
+            7: [(1, 1)],
+            8: [(2, 1), (3, 1)]
+    }
+    s = 4
 
     # Question 4 / 5
-    # tot, H = ordre_tot(G, 0, 4)
-    # print(f"{tot=}\n")
-    #
-    # # Questions 6 / 7
-    # # ordre total
-    # arb_tot, nb_it_tot = Bellman_Ford(H, s, tot)
-    # # ordre random
-    # ordre_rand = list(H.keys())
-    # random.shuffle(ordre_rand)
-    #
-    # arb_rand, nb_it_rand = Bellman_Ford(H, s, ordre_rand)
-    # print(f"{arb_tot=}\n{nb_it_tot=}\n")
-    # print(f"{arb_rand=}\n{nb_it_rand=}\n")
+    tot, H = ordre_tot(G, 0, 4)
+    print(f"{tot=}\n")
+
+    # Questions 6 / 7
+    # ordre total
+    arb_tot, nb_it_tot = Bellman_Ford(H, s, tot)
+    # ordre random
+    ordre_rand = list(H.keys())
+    random.shuffle(ordre_rand)
+
+    arb_rand, nb_it_rand = Bellman_Ford(H, s, ordre_rand)
+    print(f"{arb_tot=}\n{nb_it_tot=}\n")
+    print(f"{arb_rand=}\n{nb_it_rand=}\n")
 
     # Question 9
     # Nmax = 31
@@ -437,7 +437,7 @@ if __name__ == "__main__":
     #         G, s = create_graph_random(i, math.sqrt(i)/i)
     #         while (detection_circuit_negatif(G, s)) : # si detection de graphe circuit
     #             G, s = create_graph_random(i, math.sqrt(i)/i)
-
+    #
     #         # ordre total
     #         tot = ordre_tot(G, s, 4)
     #         H = creation_H_graphe(G, s)
@@ -446,10 +446,10 @@ if __name__ == "__main__":
     #         ordre_rand = list(H.keys())
     #         random.shuffle(ordre_rand)
     #         arb_rand, nb_it_rand = Bellman_Ford(H, s, ordre_rand)
-
+    #
     #         it_rand += nb_it_rand
     #         it_tot += nb_it_tot
-
+    #
     #     # ajout dans les tableaux
     #     tab_nb_it_tot.append(it_tot / nb_repetitions)
     #     tab_nb_it_rand.append(it_rand / nb_repetitions)
@@ -473,27 +473,27 @@ if __name__ == "__main__":
 
     # Question 10
 
-    nb_sommets = 20
-    nb_Graphes = 50
-    tab_it = []
-
-    G, s = create_graph_random(nb_sommets, math.sqrt(nb_sommets) / nb_sommets)
-    while (detection_circuit_negatif(G, s)):
-        G, s = create_graph_random(nb_sommets, math.sqrt(nb_sommets) / nb_sommets)
-
-    H = creation_H_graphe(G, s)
-
-    for i in range(5, nb_Graphes):
-        print(f"{i}/{nb_Graphes}")
-        tot = ordre_tot(G, s, i)
-        arb_tot, nb_it_tot = Bellman_Ford(H, s, tot)
-        tab_it.append(nb_it_tot)
-
-    print(tab_it)
-    xaxis = list(range(5, nb_Graphes))
-    plt.plot(xaxis, tab_it, label="ordre <tot")
-    plt.title(f"Nombre d'itérations de l'ordre <tot selon le nombre de graphes utilisés\npour {nb_sommets} sommets")
-    plt.xlabel("Nombre de graphes")
-    plt.ylabel("Nombre d'itérations")
-    plt.savefig("nb_it_tot.png")
-    plt.show()
+    # nb_sommets = 20
+    # nb_Graphes = 50
+    # tab_it = []
+    #
+    # G, s = create_graph_random(nb_sommets, math.sqrt(nb_sommets) / nb_sommets)
+    # while (detection_circuit_negatif(G, s)):
+    #     G, s = create_graph_random(nb_sommets, math.sqrt(nb_sommets) / nb_sommets)
+    #
+    # H = creation_H_graphe(G, s)
+    #
+    # for i in range(5, nb_Graphes):
+    #     print(f"{i}/{nb_Graphes}")
+    #     tot = ordre_tot(G, s, i)
+    #     arb_tot, nb_it_tot = Bellman_Ford(H, s, tot)
+    #     tab_it.append(nb_it_tot)
+    #
+    # print(tab_it)
+    # xaxis = list(range(5, nb_Graphes))
+    # plt.plot(xaxis, tab_it, label="ordre <tot")
+    # plt.title(f"Nombre d'itérations de l'ordre <tot selon le nombre de graphes utilisés\npour {nb_sommets} sommets")
+    # plt.xlabel("Nombre de graphes")
+    # plt.ylabel("Nombre d'itérations")
+    # plt.savefig("nb_it_tot.png")
+    # plt.show()
